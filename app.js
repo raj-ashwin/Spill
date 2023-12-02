@@ -1,12 +1,13 @@
 //jshint esversion:6
 require('dotenv').config();
-
+var md5 = require('md5');
 const express=require("express");
 const bodyParser=require("body-parser");
 const ejs =require("ejs");
 const mongoose=require("mongoose")
 const app=express();
 const encrypt=require("mongoose-encryption");
+const { log } = require('console');
 app.use(express.static("public"));
 app.set('view engine','ejs');
 mongoose.connect("mongodb://localhost:27017/userDB")
@@ -15,8 +16,8 @@ const userSchema = new mongoose.Schema({
     email:String,
     password:String
 });
-var secret=process.env.SECRET;
-userSchema.plugin(encrypt,{secret:secret,encryptedFields:["password"]});
+// var secret=process.env.SECRET;
+// userSchema.plugin(encrypt,{secret:secret,encryptedFields:["password"]});
 
 const User= new mongoose.model("User",userSchema);
 
@@ -39,7 +40,7 @@ app.get("/register",function(req,res){
 app.post("/register",async function(req,res){
     const newUser=new User({
         email:req.body.username,
-        password:req.body.password
+        password:md5(req.body.password)
     })
 
     try{
@@ -57,7 +58,8 @@ app.post("/login",async function(req,res){
     
     try{
     const username=req.body.username;
-    const password=req.body.password;
+    const password=md5(req.body.password);
+    // console.log(password);
     const foundUser= await User.findOne({email:username});
     if(foundUser.password===password)
     {
