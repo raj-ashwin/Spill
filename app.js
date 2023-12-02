@@ -1,21 +1,21 @@
 //jshint esversion:6
+require('dotenv').config();
+
 const express=require("express");
 const bodyParser=require("body-parser");
 const ejs =require("ejs");
 const mongoose=require("mongoose")
 const app=express();
 const encrypt=require("mongoose-encryption");
-
 app.use(express.static("public"));
 app.set('view engine','ejs');
-
 mongoose.connect("mongodb://localhost:27017/userDB")
 
 const userSchema = new mongoose.Schema({
     email:String,
     password:String
 });
-const secret ="thisisoursecret";
+var secret=process.env.SECRET;
 userSchema.plugin(encrypt,{secret:secret,encryptedFields:["password"]});
 
 const User= new mongoose.model("User",userSchema);
@@ -62,6 +62,7 @@ app.post("/login",async function(req,res){
     if(foundUser.password===password)
     {
         res.render("secrets");
+        console.log("Logged in successfully")
     }
     else{
         res.send("INCORRECT CREDENTIALS");
